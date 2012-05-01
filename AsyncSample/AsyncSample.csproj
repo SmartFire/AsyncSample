@@ -43,6 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MyAsyncContext.cs" />
+    <Compile Include="MyTaskAsyncCompletedEventArgs.cs" />
+    <Compile Include="MyTaskProgressChangedEventArgs.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Task.cs" />

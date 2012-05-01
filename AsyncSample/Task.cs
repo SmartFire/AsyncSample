@@ -5,68 +5,10 @@ using System.Text;
 using System.Threading;
 using System.ComponentModel;
 using System.Runtime.Remoting.Messaging;
+using AsyncSample;
 
 namespace AsyncExample
 {
-    internal class MyAsyncContext
-    {
-        private readonly object _sync = new object();
-        private bool _isCancelling = false;
-
-        public bool IsCancelling
-        {
-            get
-            {
-                lock (_sync) { return _isCancelling; }
-            }
-        }
-
-        public void Cancel()
-        {
-            lock (_sync) { _isCancelling = true; }
-        }
-    }
-
-    public class MyTaskProgressChangedEventArgs : ProgressChangedEventArgs
-    {
-        private string _currentFile;
-        private int _id;
-
-        public int Id
-        {
-            get { return _id; }
-        }
-
-        public string CurrentFile
-        {
-            get { return _currentFile; }
-        }
-
-        public MyTaskProgressChangedEventArgs(int progressPercentage, string currentFile, int Id,
-          object userState)
-            : base(progressPercentage, userState)
-        {
-            _currentFile = currentFile;
-            _id = Id;
-        }
-    }
-
-    public class MyTaskAsyncCompletedEventArgs : AsyncCompletedEventArgs
-    {
-        private int _id;
-
-        public int Id
-        {
-            get { return _id; }
-        }
-
-        public MyTaskAsyncCompletedEventArgs(Exception error, bool cancelled, object userState, int Id)
-            : base(error, cancelled, userState)
-        {
-            _id = Id;
-        }
-    }
-
     class Task
     {
         private delegate void MyTaskWorkerDelegate(string[] files, AsyncOperation async, MyAsyncContext asyncContext, out bool cancelled);
@@ -152,8 +94,7 @@ namespace AsyncExample
         private void MyTaskCompletedCallback(IAsyncResult ar)
         {
             // get the original worker delegate and the AsyncOperation instance
-            MyTaskWorkerDelegate worker =
-                (MyTaskWorkerDelegate)((AsyncResult)ar).AsyncDelegate;
+            MyTaskWorkerDelegate worker = (MyTaskWorkerDelegate)((AsyncResult)ar).AsyncDelegate;
             AsyncOperation async = (AsyncOperation)ar.AsyncState;
             bool cancelled;
 
@@ -168,11 +109,8 @@ namespace AsyncExample
             }
 
             // raise the completed event
-            MyTaskAsyncCompletedEventArgs completedArgs = new MyTaskAsyncCompletedEventArgs(null,
-              cancelled, null, Id);
-            async.PostOperationCompleted(
-              delegate(object e) { OnMyTaskCompleted((MyTaskAsyncCompletedEventArgs)e); },
-              completedArgs);
+            MyTaskAsyncCompletedEventArgs completedArgs = new MyTaskAsyncCompletedEventArgs(null, cancelled, null, Id);
+            async.PostOperationCompleted(delegate(object e) { OnMyTaskCompleted((MyTaskAsyncCompletedEventArgs)e); }, completedArgs);
         }
 
         protected virtual void OnMyTaskCompleted(MyTaskAsyncCompletedEventArgs e)
@@ -189,6 +127,5 @@ namespace AsyncExample
                     _myTaskContext.Cancel();
             }
         }
-
     }
 }
